@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Meeting Simulator - Pretend to be Busy!</title>
+
+    <meta name="description" content="Simulate being in an online video meeting with this interactive web app. Perfect for pretending to be busy or for a bit of fun. Features dynamic participants and a live chat.">
+    <meta name="keywords" content="online meeting simulator, video meeting, pretend meeting, virtual meeting, fake meeting, web app, productivity, humor, office simulator">
+    <link rel="canonical" href="https://pirillo.com/arcade/online-meeting.html">
+    <meta property="og:title" content="Online Meeting Simulator - Pretend to be Busy!">
+    <meta property="og:description" content="Simulate being in an online video meeting. Dynamic participants, live chat, and your webcam feed make it look real!">
+    <meta property="og:image" content="https://pirillo.com/arcade/images/online-meeting.png">
+    <meta property="og:url" content="https://pirillo.com/arcade/online-meeting.html">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Online Meeting Simulator - Pretend to be Busy!">
+    <meta name="twitter:description" content="Need to look busy? Join this simulated online video meeting with dynamic participants and a live chat.">
+    <meta name="twitter:image" content="https://pirillo.com/arcade/images/online-meeting.png">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Online Meeting Simulator",
+      "description": "An interactive web application that simulates an online video meeting, allowing users to appear busy. Features dynamic virtual participants, a simulated chat, and integrates the user's webcam.",
+      "applicationCategory": "EntertainmentApplication",
+      "operatingSystem": "All (Web-based)",
+      "browserRequirements": "Requires a modern web browser with JavaScript and webcam access.",
+      "url": "https://pirillo.com/arcade/online-meeting.html",
+      "image": "https://pirillo.com/arcade/images/online-meeting.png",
+      "screenshot": "https://pirillo.com/arcade/images/online-meeting.png",
+      "creator": {
+        "@type": "Person",
+        "name": "Chris Pirillo",
+        "url": "https://pirillo.com/"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1CQ4D3VQ3L"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-1CQ4D3VQ3L');
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overscroll-behavior: none;
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+            color: #1f2937; /* Tailwind gray-800 for default text */
+        }
+        .main-content-area {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+        }
+        .video-grid-wrapper {
+            flex-grow: 1;
+            height: 100%;
+        }
+        .video-container { /* This is the cell for each participant */
+            width: 100%;
+            height: 100%;
+            background-color: #4A5568; /* Tailwind gray-700 - Default background if content doesn't fill */
+            border-radius: 0.5rem;
+            overflow: hidden;
+            position: relative;
+        }
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+        .participant-name {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background-color: rgba(31, 41, 55, 0.75);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            z-index: 10;
+        }
+        .chat-sidebar {
+            width: 20rem;
+            min-width: 20rem;
+            height: 100vh;
+            overflow-y: hidden; /* Prevent sidebar itself from scrolling, messages area will scroll */
+            display: flex;
+            flex-direction: column;
+            background-color: #ffffff;
+            border-left: 1px solid #e5e7eb; /* Tailwind gray-200 */
+        }
+        .chat-sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .chat-sidebar-header h2 {
+            color: #111827; /* Tailwind gray-900 */
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .chat-messages-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .chat-messages-area > div + div {
+             margin-top: 0.75rem;
+        }
+        .chat-messages-area .text-sm {
+            color: #374151; /* Tailwind gray-700 */
+        }
+        .chat-input-area {
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb; /* Tailwind gray-200 */
+            background-color: #f9fafb; /* Tailwind gray-50 */
+            display: flex;
+            gap: 0.5rem; /* Space between input and button */
+        }
+        .chat-input-area input[type="text"] {
+            flex-grow: 1;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db; /* Tailwind gray-300 */
+            border-radius: 0.375rem; /* Tailwind rounded-md */
+            font-size: 0.875rem; /* Tailwind text-sm */
+            color: #1f2937; /* Tailwind gray-800 */
+        }
+        .chat-input-area input[type="text"]:focus {
+            outline: none;
+            border-color: #2563eb; /* Tailwind blue-600 */
+            box-shadow: 0 0 0 1px #2563eb;
+        }
+        .chat-input-area button {
+            padding: 0.5rem 1rem;
+            background-color: #2563eb; /* Tailwind blue-600 */
+            color: white;
+            border: none;
+            border-radius: 0.375rem; /* Tailwind rounded-md */
+            font-size: 0.875rem; /* Tailwind text-sm */
+            font-weight: 500; /* Tailwind font-medium */
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .chat-input-area button:hover {
+            background-color: #1d4ed8; /* Tailwind blue-700 */
+        }
+
+
+        .video-grid-container {
+            display: grid;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            height: 100%;
+            align-content: start;
+        }
+
+        /* Styles for the initials placeholder */
+        .initials-placeholder-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #2d3748; /* Tailwind gray-800 (dark grey) */
+            color: white; /* Default text color for this container */
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        .initials-circle {
+            width: 5rem;
+            height: 5rem;
+            border-radius: 50%;
+            background-color: #718096; /* Tailwind gray-500 (medium grey) */
+            color: #FFFFFF; /* White text for initials */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 500;
+            line-height: 1;
+            text-transform: uppercase;
+        }
+
+        .video-container.active-speaker video,
+        .video-container.active-speaker .initials-placeholder-container {
+            border: 6px solid #059669; /* Tailwind green-600 */
+            box-shadow: 0 0 25px 8px rgba(5, 150, 105, 0.75);
+            box-sizing: border-box;
+        }
+
+        .chat-messages-area::-webkit-scrollbar { width: 8px; }
+        .chat-messages-area::-webkit-scrollbar-track { background: #e5e7eb; }
+        .chat-messages-area::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 4px; }
+        .chat-messages-area::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+        .video-error-message {
+            color: #ef4444;
+            background-color: rgba(255, 255, 255, 0.8);
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.75rem;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .chat-sidebar {
+                display: none;
+            }
+            .video-grid-wrapper {
+                width: 100%;
+            }
+            .participant-name {
+                font-size: 0.7rem;
+                padding: 1px 4px;
+            }
+            .initials-circle {
+                width: 4rem;
+                height: 4rem;
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 h-screen overflow-hidden">
+
+    <div class="main-content-area">
+        <main class="video-grid-wrapper">
+            <div id="videoGrid" class="video-grid-container">
+                </div>
+        </main>
+
+        <aside class="chat-sidebar">
+            <div class="chat-sidebar-header">
+                <h2>Meeting Chat</h2>
+            </div>
+            <div id="chatMessages" class="chat-messages-area">
+                </div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Type a message..." class="rounded-md">
+                <button id="sendChatButton" class="rounded-md">Send</button>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        const videoGrid = document.getElementById('videoGrid');
+        const chatMessagesContainer = document.getElementById('chatMessages');
+        let chatInput; // Will be assigned in initializeMeeting
+        let sendChatButton; // Will be assigned in initializeMeeting
+
+        const MAX_PARTICIPANTS = 9;
+        const USER_PARTICIPANT_ID = 'user-webcam';
+        const VALID_TOTAL_PARTICIPANT_COUNTS = [4, 6, 9];
+
+        const availableVideoFiles = Array.from({ length: 10 }, (_, i) => `video${i + 1}.mp4`);
+        let usedVideoFiles = [];
+
+        const participantNames = ['Alex S.', 'Jamie D.', 'Chris L.', 'Pat K.', 'Taylor B.', 'Jordan M.', 'Casey D.', 'Morgan W.', 'Riley G.', 'Drew M.'];
+        const chatColors = ['#D9534F', '#5CB85C', '#F0AD4E', '#45B7D1', '#2AB7CA', '#FF6B6B', '#4ECDC4', '#8A6FBF', '#c026d3', '#ea580c'];
+
+        const chatMessagesPool = [
+            "Can everyone see my screen?", "Sorry, I was on mute.", "Good morning!", "I have a quick question.",
+            "Let's circle back on that.", "Thanks for the update.", "Agreed.", "I'll follow up via email.",
+            "My connection is a bit unstable.", "Could you repeat that, please?", "That makes sense.",
+            "Let me check on that.", "Interesting point.", "Who is taking notes?", "I can share the document.",
+            "Is [User] there? Your camera is on.", "Thinking about lunch already!", "This is a productive session.",
+            "Can we take a 5-min break soon?", "I'll send out the minutes after this.",
+            "Just joined, sorry I'm a bit late.", "My audio seems to be working now.", "Let me just pull up that information.",
+            "That's a great suggestion, thanks!", "I'm not sure I entirely follow, could you elaborate on that last point?",
+            "We're running a bit over the scheduled time, should we aim to wrap this point up?",
+            "I have another call I need to jump to in about 10 minutes.", "Thanks everyone, this has been very productive.",
+            "Understood.", "Got it.", "Sounds good.", "Let's proceed.", "I'll look into it.", "Noted."
+        ];
+
+        let participants = [];
+        let activeSpeakerId = null;
+
+        function getInitials(name) {
+            if (!name || typeof name !== 'string') return '??';
+            const parts = name.trim().split(/\s+/).filter(p => p.length > 0);
+            if (parts.length === 0) return '??';
+            if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+            return (parts[0][0] + (parts[parts.length - 1][0] || '')).toUpperCase();
+        }
+
+        async function setupUserWebcam() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const userVideoElement = createVideoElement(USER_PARTICIPANT_ID, true);
+                userVideoElement.srcObject = stream;
+                userVideoElement.muted = true;
+                userVideoElement.play().catch(e => console.warn("User webcam initial play failed:", e));
+
+                addParticipantToGrid({
+                    id: USER_PARTICIPANT_ID,
+                    name: 'You',
+                    sourceType: 'webcam',
+                    displayType: 'video',
+                    videoElement: userVideoElement,
+                    chatColor: '#1f2937',
+                    isWebcam: true
+                });
+            } catch (err) {
+                console.error("Error accessing webcam:", err);
+                addParticipantToGrid({
+                    id: USER_PARTICIPANT_ID,
+                    name: 'You',
+                    sourceType: 'webcam_failed',
+                    displayType: 'webcam_error_placeholder',
+                    initials: getInitials('You'),
+                    chatColor: '#1f2937',
+                    isWebcam: true
+                });
+            }
+        }
+
+        function createVideoElement(id, isWebcam = false) {
+            const video = document.createElement('video');
+            video.id = `video-${id}`;
+            video.autoplay = isWebcam;
+            video.loop = true;
+            video.playsInline = true;
+            video.muted = true;
+            if (!isWebcam) video.controls = false;
+            return video;
+        }
+
+        function addParticipantToGrid(participant) {
+            if (participants.find(p => p.id === participant.id)) return;
+            participants.push(participant);
+
+            const container = document.createElement('div');
+            container.id = `container-${participant.id}`;
+            container.className = 'video-container';
+
+            if (participant.displayType === 'video' && participant.videoElement) {
+                container.appendChild(participant.videoElement);
+                if (!participant.isWebcam && participant.id !== activeSpeakerId) {
+                    participant.videoElement.pause();
+                } else if (participant.isWebcam && participant.videoElement.srcObject) {
+                    participant.videoElement.play().catch(e => console.warn(`Webcam play in addParticipantToGrid for ${participant.id} failed:`, e));
+                }
+            } else if (participant.displayType === 'initials_placeholder' && participant.initials) {
+                const placeholderContainerDiv = document.createElement('div');
+                placeholderContainerDiv.className = 'initials-placeholder-container';
+                const circleDiv = document.createElement('div');
+                circleDiv.className = 'initials-circle';
+                circleDiv.textContent = participant.initials;
+                placeholderContainerDiv.appendChild(circleDiv);
+                container.appendChild(placeholderContainerDiv);
+            } else if (participant.displayType === 'webcam_error_placeholder') {
+                const placeholderContainerDiv = document.createElement('div');
+                placeholderContainerDiv.className = 'initials-placeholder-container';
+                const circleDiv = document.createElement('div');
+                circleDiv.className = 'initials-circle';
+                circleDiv.textContent = participant.initials || getInitials(participant.name);
+                placeholderContainerDiv.appendChild(circleDiv);
+                container.appendChild(placeholderContainerDiv);
+            }
+
+            const nameTag = document.createElement('div');
+            nameTag.className = 'participant-name';
+            nameTag.textContent = participant.name;
+            container.appendChild(nameTag);
+
+            const userContainer = videoGrid.querySelector(`#container-${USER_PARTICIPANT_ID}`);
+            if (participant.id === USER_PARTICIPANT_ID || !userContainer) {
+                videoGrid.insertBefore(container, videoGrid.firstChild);
+            } else {
+                videoGrid.appendChild(container);
+            }
+            updateVideoGridLayout();
+        }
+
+        function removeParticipantFromGrid(participantId) {
+            const participantIndex = participants.findIndex(p => p.id === participantId);
+            if (participantIndex === -1) return;
+            const participant = participants[participantIndex];
+
+            if (participant.videoSrc) {
+                const videoFileIndex = usedVideoFiles.indexOf(participant.videoSrc);
+                if (videoFileIndex > -1) usedVideoFiles.splice(videoFileIndex, 1);
+            }
+            if (participant.videoElement) {
+                participant.videoElement.pause();
+                if (participant.sourceType === 'webcam' && participant.videoElement.srcObject) {
+                    participant.videoElement.srcObject.getTracks().forEach(track => track.stop());
+                }
+                participant.videoElement.srcObject = null;
+                participant.videoElement.src = '';
+            }
+            participants.splice(participantIndex, 1);
+            const container = document.getElementById(`container-${participantId}`);
+            if (container) container.remove();
+            if (activeSpeakerId === participantId) {
+                activeSpeakerId = null;
+                designateRandomActiveSpeaker();
+            }
+            updateVideoGridLayout();
+        }
+
+        function manageParticipantCount() {
+            const currentTotalParticipantCount = participants.length;
+            const targetTotalParticipantCount = VALID_TOTAL_PARTICIPANT_COUNTS[Math.floor(Math.random() * VALID_TOTAL_PARTICIPANT_COUNTS.length)];
+            console.log(`Managing participants: Current ${currentTotalParticipantCount}, Target ${targetTotalParticipantCount}`);
+
+            if (currentTotalParticipantCount < targetTotalParticipantCount) {
+                const numToAdd = targetTotalParticipantCount - currentTotalParticipantCount;
+                for (let i = 0; i < numToAdd; i++) {
+                    if (participants.length < MAX_PARTICIPANTS) addRandomVirtualParticipant();
+                    else break;
+                }
+            } else if (currentTotalParticipantCount > targetTotalParticipantCount) {
+                const numToRemove = currentTotalParticipantCount - targetTotalParticipantCount;
+                for (let i = 0; i < numToRemove; i++) {
+                    const virtualParticipants = participants.filter(p => !p.isWebcam);
+                    if (virtualParticipants.length > 0 && participants.length > VALID_TOTAL_PARTICIPANT_COUNTS[0]) {
+                        const randomIndex = Math.floor(Math.random() * virtualParticipants.length);
+                        removeParticipantFromGrid(virtualParticipants[randomIndex].id);
+                    } else break;
+                }
+            }
+            const potentialSpeakers = participants.filter(p => p.id !== USER_PARTICIPANT_ID && (p.displayType === 'video' || p.displayType === 'initials_placeholder'));
+            if (!activeSpeakerId && potentialSpeakers.length > 0) designateRandomActiveSpeaker();
+            else if (potentialSpeakers.length === 0 && activeSpeakerId) {
+                const oldActiveContainer = document.getElementById(`container-${activeSpeakerId}`);
+                if (oldActiveContainer) oldActiveContainer.classList.remove('active-speaker');
+                activeSpeakerId = null;
+            }
+            updateVideoGridLayout();
+        }
+
+        function addRandomVirtualParticipant() {
+            if (participants.length >= VALID_TOTAL_PARTICIPANT_COUNTS[VALID_TOTAL_PARTICIPANT_COUNTS.length -1] || participants.length >= MAX_PARTICIPANTS) return;
+            let availableForSelection = availableVideoFiles.filter(vf => !usedVideoFiles.includes(vf));
+            if (availableForSelection.length === 0) {
+                if(availableVideoFiles.length > 0) availableForSelection = [...availableVideoFiles];
+                else { console.warn("No video files defined."); return; }
+            }
+            const videoFileName = availableForSelection[Math.floor(Math.random() * availableForSelection.length)];
+            if (!videoFileName) { console.warn("Could not select video file."); return; }
+            if (!usedVideoFiles.includes(videoFileName)) usedVideoFiles.push(videoFileName);
+
+            const participantId = `participant-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+            let participantName = participantNames[Math.floor(Math.random() * participantNames.length)];
+            const currentNames = participants.map(p => p.name);
+            if (currentNames.includes(participantName)) {
+                let attempts = 0;
+                while(currentNames.includes(participantName) && attempts < participantNames.length * 2) {
+                    participantName = participantNames[Math.floor(Math.random() * participantNames.length)];
+                    attempts++;
+                }
+                if (currentNames.includes(participantName)) participantName = `${participantName} ${Math.floor(Math.random()*100)}`;
+            }
+            const currentParticipantChatColors = participants.filter(p => !p.isWebcam && p.chatColor).map(p => p.chatColor);
+            let potentialColors = chatColors.filter(color => !currentParticipantChatColors.includes(color));
+            let assignedColor = potentialColors.length > 0 ? potentialColors[Math.floor(Math.random() * potentialColors.length)] : chatColors[Math.floor(Math.random() * chatColors.length)];
+            const showVideo = Math.random() > 0.25;
+            let newParticipantData = { id: participantId, name: participantName, sourceType: 'prerecorded', chatColor: assignedColor, isWebcam: false, videoSrc: videoFileName };
+            if (showVideo) {
+                const videoElement = createVideoElement(participantId);
+                videoElement.src = `videos/webcams/${videoFileName}`;
+                newParticipantData = { ...newParticipantData, displayType: 'video', videoElement: videoElement };
+            } else {
+                newParticipantData = { ...newParticipantData, displayType: 'initials_placeholder', initials: getInitials(participantName) };
+            }
+            addParticipantToGrid(newParticipantData);
+        }
+
+        function designateRandomActiveSpeaker() {
+            const potentialSpeakers = participants.filter(p => p.id !== USER_PARTICIPANT_ID && (p.displayType === 'video' || p.displayType === 'initials_placeholder'));
+            if (potentialSpeakers.length === 0) {
+                if (activeSpeakerId) {
+                    const oldActiveContainer = document.getElementById(`container-${activeSpeakerId}`);
+                    if (oldActiveContainer) oldActiveContainer.classList.remove('active-speaker');
+                    const oldSpeaker = participants.find(p => p.id === activeSpeakerId);
+                    if(oldSpeaker && oldSpeaker.displayType === 'video' && oldSpeaker.videoElement) oldSpeaker.videoElement.pause();
+                    activeSpeakerId = null;
+                }
+                participants.forEach(p => { if (p.displayType === 'video' && p.videoElement && !p.isWebcam) p.videoElement.pause(); });
+                return;
+            }
+            const randomParticipant = potentialSpeakers[Math.floor(Math.random() * potentialSpeakers.length)];
+            setActiveSpeaker(randomParticipant.id);
+        }
+
+        function setActiveSpeaker(participantId) {
+            if (participantId === USER_PARTICIPANT_ID) {
+                const userContainer = document.getElementById(`container-${USER_PARTICIPANT_ID}`);
+                if (userContainer) userContainer.classList.remove('active-speaker');
+                if (activeSpeakerId === USER_PARTICIPANT_ID) { activeSpeakerId = null; designateRandomActiveSpeaker(); }
+                return;
+            }
+            if (activeSpeakerId === participantId) {
+                const currentActiveP = participants.find(p => p.id === activeSpeakerId);
+                if (currentActiveP && currentActiveP.displayType === 'video' && currentActiveP.videoElement) {
+                    currentActiveP.videoElement.muted = false;
+                    currentActiveP.videoElement.play().catch(e => console.warn("Active speaker re-play failed:", e));
+                }
+                return;
+            }
+            if (activeSpeakerId) {
+                const oldSpeaker = participants.find(p => p.id === activeSpeakerId);
+                if (oldSpeaker && oldSpeaker.displayType === 'video' && oldSpeaker.videoElement) {
+                    oldSpeaker.videoElement.pause();
+                    oldSpeaker.videoElement.muted = true;
+                }
+                const oldContainer = document.getElementById(`container-${activeSpeakerId}`);
+                if (oldContainer) oldContainer.classList.remove('active-speaker');
+            }
+            activeSpeakerId = participantId;
+            participants.forEach(p => {
+                const container = document.getElementById(`container-${p.id}`);
+                if (p.id === activeSpeakerId) {
+                    if (p.displayType === 'video' && p.videoElement) {
+                        p.videoElement.muted = false;
+                        p.videoElement.play().catch(e => console.warn(`Play failed for new active speaker ${p.id}:`, e));
+                    }
+                    if (container) container.classList.add('active-speaker');
+                    console.log(`${p.name} is now the active speaker.`);
+                } else {
+                    if (p.displayType === 'video' && p.videoElement) {
+                        p.videoElement.muted = true;
+                        if (!p.isWebcam) p.videoElement.pause();
+                        else if (p.isWebcam && p.videoElement.srcObject) p.videoElement.play().catch(e => console.warn("User webcam play (non-active) failed:", e));
+                    }
+                    if (container) container.classList.remove('active-speaker');
+                }
+            });
+        }
+
+        function updateVideoGridLayout() {
+            const count = videoGrid.children.length;
+            if (count === 0) return;
+            Array.from(videoGrid.children).forEach(child => { child.style.gridColumn = ''; child.style.gridRow = ''; });
+            let cols = 1, rows = 1;
+            switch (count) {
+                case 1: cols = 1; rows = 1; break;
+                case 2: cols = 2; rows = 1; break;
+                case 3: cols = 2; rows = 2; if (videoGrid.children[2]) videoGrid.children[2].style.gridColumn = 'span 2'; break;
+                case 4: cols = 2; rows = 2; break;
+                case 5: cols = 2; rows = 3; if (videoGrid.children[4]) videoGrid.children[4].style.gridColumn = 'span 2'; break;
+                case 6: cols = 3; rows = 2; break;
+                case 7: cols = 3; rows = 3; if (videoGrid.children[6]) videoGrid.children[6].style.gridColumn = 'span 3'; break;
+                case 8: cols = 4; rows = 2; break;
+                case 9: cols = 3; rows = 3; break;
+                default: if (count > 0) { cols = Math.ceil(Math.sqrt(count)); rows = Math.ceil(count / cols); } else { cols = 1; rows = 1; } break;
+            }
+            videoGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            videoGrid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+            participants.forEach(p => {
+                if (p.displayType === 'video' && p.videoElement) {
+                    if (p.id === activeSpeakerId) p.videoElement.play().catch(e => {});
+                    else if (!p.isWebcam) p.videoElement.pause();
+                    else if (p.isWebcam && p.videoElement.srcObject) p.videoElement.play().catch(e => {});
+                }
+            });
+        }
+
+        // Function to display any chat message (user or bot)
+        function displayChatMessage(senderName, messageText, chatColor) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'text-sm break-words';
+
+            const nameSpan = document.createElement('span');
+            nameSpan.style.color = chatColor;
+            nameSpan.style.fontWeight = 'bold';
+            nameSpan.textContent = `${senderName}: `;
+            messageElement.appendChild(nameSpan);
+
+            const messageSpan = document.createElement('span');
+            messageSpan.textContent = messageText;
+            messageElement.appendChild(messageSpan);
+
+            chatMessagesContainer.appendChild(messageElement);
+            chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+        }
+
+        // Handles sending of user's chat message
+        function handleUserChatSend() {
+            const messageText = chatInput.value.trim();
+            if (messageText === '') return;
+
+            const userParticipant = participants.find(p => p.id === USER_PARTICIPANT_ID);
+            const userName = userParticipant ? userParticipant.name : "You";
+            const userChatColor = userParticipant ? userParticipant.chatColor : '#1f2937'; // Default user chat color
+
+            displayChatMessage(userName, messageText, userChatColor);
+            chatInput.value = ''; // Clear input
+
+            // Trigger a response from a virtual participant
+            setTimeout(() => triggerVirtualParticipantResponse(messageText), 1000 + Math.random() * 2000); // 1-3 second delay
+        }
+
+        // Triggers a response from a virtual participant
+        function triggerVirtualParticipantResponse(originalUserMessage) {
+            const virtualParticipantsWithChatAbility = participants.filter(p =>
+                !p.isWebcam && p.id !== USER_PARTICIPANT_ID &&
+                (p.displayType === 'video' || p.displayType === 'initials_placeholder')
+            );
+            if (virtualParticipantsWithChatAbility.length === 0) return;
+
+            const randomResponder = virtualParticipantsWithChatAbility[Math.floor(Math.random() * virtualParticipantsWithChatAbility.length)];
+            let responseText = "Okay."; // Default simple response
+
+            const lowerUserMessage = originalUserMessage.toLowerCase();
+            if (lowerUserMessage.includes("hello") || lowerUserMessage.includes("hi") || lowerUserMessage.includes("hey")) {
+                responseText = ["Hello!", "Hi there!", "Hey!", "Hi, " + randomResponder.name.split(' ')[0] + " here."][Math.floor(Math.random()*4)];
+            } else if (lowerUserMessage.includes("how are you")) {
+                responseText = ["Doing well, thanks!", "I'm good, how about you?", "Can't complain!", "All good here."][Math.floor(Math.random()*4)];
+            } else if (lowerUserMessage.includes("thank")) {
+                responseText = ["You're welcome!", "No problem.", "Happy to help!", "Anytime!"][Math.floor(Math.random()*4)];
+            } else if (lowerUserMessage.includes("bye")) {
+                responseText = ["Goodbye!", "See you later.", "Catch you later."][Math.floor(Math.random()*3)];
+            } else if (lowerUserMessage.includes("?")) {
+                responseText = ["Good question.", "Let me think about that.", "I'm not sure about that.", "That's an interesting point.", "Hmm, I'll have to get back to you on that."][Math.floor(Math.random()*5)];
+            } else if (Math.random() < 0.4) { // 40% chance of a more generic chat pool message
+                responseText = chatMessagesPool[Math.floor(Math.random() * chatMessagesPool.length)];
+                // Avoid the bot asking a question that includes [User] or is too specific to being a new joiner
+                while(responseText.includes("[User]") || responseText.toLowerCase().includes("just joined")) {
+                    responseText = chatMessagesPool[Math.floor(Math.random() * chatMessagesPool.length)];
+                }
+            }
+            displayChatMessage(randomResponder.name, responseText, randomResponder.chatColor);
+        }
+
+
+        // Schedules automated messages from virtual participants
+        function scheduleAutomatedChatMessage() {
+            const virtualParticipants = participants.filter(p =>
+                !p.isWebcam && p.id !== USER_PARTICIPANT_ID &&
+                (p.displayType === 'video' || p.displayType === 'initials_placeholder')
+            );
+            if (virtualParticipants.length === 0) return;
+
+            const randomParticipant = virtualParticipants[Math.floor(Math.random() * virtualParticipants.length)];
+            let randomMessageText = chatMessagesPool[Math.floor(Math.random() * chatMessagesPool.length)];
+
+            if (randomMessageText.includes('[User]')) {
+                const userParticipant = participants.find(p => p.id === USER_PARTICIPANT_ID);
+                const userName = userParticipant ? userParticipant.name : "our colleague";
+                randomMessageText = randomMessageText.replace(/\[User\]/g, userName);
+            }
+            displayChatMessage(randomParticipant.name, randomMessageText, randomParticipant.chatColor);
+        }
+
+
+        function startTimers() {
+            setInterval(manageParticipantCount, 30 * 1000);
+
+            function scheduleActiveSpeakerChange() {
+                const changeInterval = (4 * 1000) + (Math.random() * 8 * 1000);
+                setTimeout(() => {
+                    designateRandomActiveSpeaker();
+                    scheduleActiveSpeakerChange();
+                }, changeInterval);
+            }
+            const initialPotentialSpeakers = participants.filter(p => p.id !== USER_PARTICIPANT_ID && (p.displayType === 'video' || p.displayType === 'initials_placeholder'));
+            if (initialPotentialSpeakers.length > 0) {
+                 setTimeout(scheduleActiveSpeakerChange, (2 * 1000) + (Math.random() * 3 * 1000));
+            } else {
+                const initialSpeakerCheck = setInterval(() => {
+                    const potentialSpeakersNow = participants.filter(p => p.id !== USER_PARTICIPANT_ID && (p.displayType === 'video' || p.displayType === 'initials_placeholder'));
+                    if (potentialSpeakersNow.length > 0) {
+                        scheduleActiveSpeakerChange();
+                        clearInterval(initialSpeakerCheck);
+                    }
+                }, 1000);
+            }
+
+            // Schedule automated chat messages
+            function scheduleAutomatedChatTimer() {
+                const chatInterval = (20 * 1000) + (Math.random() * 40 * 1000); // 20 to 60 seconds
+                setTimeout(() => {
+                    scheduleAutomatedChatMessage(); // Call the function that actually posts the message
+                    scheduleAutomatedChatTimer(); // Reschedule
+                }, chatInterval);
+            }
+            scheduleAutomatedChatTimer(); // Start automated chat messages
+        }
+
+        async function initializeMeeting() {
+            // Assign DOM elements for chat input
+            chatInput = document.getElementById('chatInput');
+            sendChatButton = document.getElementById('sendChatButton');
+
+            // Add event listeners for chat input
+            sendChatButton.addEventListener('click', handleUserChatSend);
+            chatInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Prevent default form submission if it were in a form
+                    handleUserChatSend();
+                }
+            });
+
+            await setupUserWebcam();
+
+            const targetInitialTotalCount = VALID_TOTAL_PARTICIPANT_COUNTS[Math.floor(Math.random() * VALID_TOTAL_PARTICIPANT_COUNTS.length)];
+            const userIsPresent = participants.some(p => p.id === USER_PARTICIPANT_ID);
+            const initialVirtualCount = targetInitialTotalCount - (userIsPresent ? 1:0);
+
+            for (let i = 0; i < initialVirtualCount; i++) {
+                 if (participants.length < targetInitialTotalCount && participants.length < MAX_PARTICIPANTS) addRandomVirtualParticipant();
+                 else break;
+            }
+            const potentialSpeakers = participants.filter(p => p.id !== USER_PARTICIPANT_ID && (p.displayType === 'video' || p.displayType === 'initials_placeholder'));
+            if (potentialSpeakers.length > 0) {
+                designateRandomActiveSpeaker();
+            } else {
+                const userP = participants.find(p => p.id === USER_PARTICIPANT_ID);
+                if (userP && userP.displayType === 'video' && userP.videoElement && userP.videoElement.srcObject) {
+                    userP.videoElement.play().catch(e => console.warn("User webcam play on init (no other speakers) failed:", e));
+                }
+            }
+            updateVideoGridLayout();
+            startTimers();
+            window.addEventListener('resize', updateVideoGridLayout);
+        }
+
+        document.addEventListener('error', (event) => {
+            const target = event.target;
+            if (target.tagName === 'VIDEO' && target.error) {
+                console.warn(`Error loading video: ${target.src}`, target.error);
+                const container = target.closest('.video-container');
+                if (container && !container.querySelector('.video-error-message')) {
+                    const errorMsg = document.createElement('p');
+                    errorMsg.className = 'video-error-message';
+                    let videoFileName = 'unknown video';
+                    try { videoFileName = target.src.split('/').pop(); } catch(e){}
+                    errorMsg.textContent = `Error: Could not load '${videoFileName}'. Ensure 'videos/webcams/${videoFileName}' exists.`;
+                    if (target.parentElement === container) container.insertBefore(errorMsg, target);
+                    else container.appendChild(errorMsg);
+                }
+            }
+        }, true);
+
+        initializeMeeting();
+
+    </script>
+</body>
+</html>
