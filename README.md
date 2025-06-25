@@ -7,6 +7,7 @@ Simulate being in an online video meeting with this interactive web app. Perfect
 
 ![Screenshot](https://github.com/ChrisPirillo/online-meeting/blob/main/assets/screenshot.png?raw=true)
 
+
 ![Screenshot](https://raw.githubusercontent.com/ChrisPirillo/online-meeting/main/assets/screenshot.png)
 
 * Try it now: [https://pirillo.com/arcade/online-meeting.html](https://pirillo.com/arcade/online-meeting.html)
